@@ -7,6 +7,44 @@ import cv2
 import os
 import sys
 
+class Meta_data:
+    def __init__(self):
+
+        self.default_meta = {'identifier': 0,
+                     'name': 0,
+                     'sex': 0,
+                     "scores": 0,
+                     "history_comparison": set()
+                     }
+
+    def read_metadata(self, path):
+        self.__path(path)
+        dflimg = DFLIMG.DFLJPG.load(self.path)
+        try:
+            meta = dflimg.get_dict()
+            meta["history_comparison"]
+            print(f'metadata from {self.name} read: ', meta)
+            return meta
+        except:
+            print(f'{self.name} have no metadata')
+            return self.default_meta
+
+    def save_metadata(self, path, meta):
+        self.__path(path)
+        dflimg = DFLIMG.DFLJPG.load(self.path)
+        dflimg.set_dict(dict_data=meta)
+        dflimg.save()
+        print('Meta_data save ', self.name, meta)
+
+    def del_metadata(self):
+        dflimg = DFLIMG.DFLJPG.load(self.path)
+        dflimg.set_dict(dict_data={})
+        dflimg.save()
+
+    def __path(self, path):
+        self.path = path
+        self.name = os.path.basename(self.path)
+
 class Buty(Ui_MainWindow):
     def __init__(self, MainWindow):
         super(Buty, self).__init__()
@@ -18,6 +56,9 @@ class Buty(Ui_MainWindow):
 
         self.files_list = os.listdir(self.dir)
         self.len_files_list = len(self.files_list)
+
+            #Classes
+        self.meta_data = Meta_data()
 
             #variables:
         self.file_1_index = 0
@@ -33,6 +74,8 @@ class Buty(Ui_MainWindow):
     # функция которую надо запускать что бы обновить окно и данные
     def actions(self):
         self.paths()
+        self.meta_1 = self.meta_data.read_metadata(self.path_file_1)
+        self.meta_2 = self.meta_data.read_metadata(self.path_file_2)
         self.setupUi_chenges()
 
     # рассчитывается индекс изображения в списке файлов и формируется имя файла
@@ -62,18 +105,17 @@ class Buty(Ui_MainWindow):
 
     # инструкции при нажатии
     def on_click(self, btn_name):
+        self.meta_data.save_metadata(self.path_file_1, self.meta_1)
+        self.meta_data.save_metadata(self.path_file_2, self.meta_2)
         if btn_name == "img_1":
             self.file_1_index += 1
         elif btn_name == "img_2":
             self.file_2_index += 1
         self.actions()
 
-    def read_metadata(self):
-        dflimg = DFLIMG.DFLJPG.load(self.path_file_1)
-        try:
-            self.markers = dflimg.get_dict()['keypoints']
-        except:
-            pass
+
+
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
