@@ -1,49 +1,7 @@
 from Buty.Buty_interface import *
+from Help_Fn.functions import *
 
-import pickle
-import DFLIMG
-import cv2
 
-import os
-import sys
-
-class Meta_data:
-    def __init__(self):
-
-        self.default_meta = {'identifier': 0,
-                     'name': 0,
-                     'sex': 0,
-                     "scores": 0,
-                     "history_comparison": set()
-                     }
-
-    def read_metadata(self, path):
-        self.__path(path)
-        dflimg = DFLIMG.DFLJPG.load(self.path)
-        try:
-            meta = dflimg.get_dict()
-            meta["history_comparison"]
-            print(f'metadata from {self.name} read: ', meta)
-            return meta
-        except:
-            print(f'{self.name} have no metadata')
-            return self.default_meta
-
-    def save_metadata(self, path, meta):
-        self.__path(path)
-        dflimg = DFLIMG.DFLJPG.load(self.path)
-        dflimg.set_dict(dict_data=meta)
-        dflimg.save()
-        print('Meta_data save ', self.name, meta)
-
-    def del_metadata(self):
-        dflimg = DFLIMG.DFLJPG.load(self.path)
-        dflimg.set_dict(dict_data={})
-        dflimg.save()
-
-    def __path(self, path):
-        self.path = path
-        self.name = os.path.basename(self.path)
 
 class Buty(Ui_MainWindow):
     def __init__(self, MainWindow):
@@ -112,9 +70,6 @@ class Buty(Ui_MainWindow):
         elif btn_name == "img_2":
             self.file_2_index += 1
         self.actions()
-
-
-
 
 
 if __name__ == "__main__":
