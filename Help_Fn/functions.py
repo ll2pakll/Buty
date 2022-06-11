@@ -62,6 +62,6 @@ class Files:
                     filelist.append(os.path.join(root, file))
         return filelist
 
-    def get_dict_file(self, path):
-        path = path.split('\\')[-2:]
-        return os.path.join(path[-2], path[-1])
+    def get_deep_file(self, path, deep):
+        path = path.split('\\')[-deep:]
+        return os.path.join(*path)

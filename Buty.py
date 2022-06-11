@@ -9,11 +9,9 @@ class Buty(Ui_MainWindow):
         self.setupUi(MainWindow)
         #Static:
             #paths:
-        self.dir_frames = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Buty_frames'))
-        self.dir = os.path.join(self.dir_frames, 'Leonardo_DiCaprio_all')
-
-        self.files_list = os.listdir(self.dir)
-        self.len_files_list = len(self.files_list)
+        self.files = Files() # класс для работы с файлами
+        self.paths_list = self.files.get_tree(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Buty_frames')))
+        self.len_paths_list = len(self.paths_list)
 
             #Classes
         self.meta_data = Meta_data()
@@ -38,11 +36,11 @@ class Buty(Ui_MainWindow):
 
     # рассчитывается индекс изображения в списке файлов и формируется имя файла
     def paths(self):
-        self.file_name_1 = self.files_list[self.file_1_index % self.len_files_list]
-        self.path_file_1 = os.path.join(self.dir, self.file_name_1)
+        self.path_file_1 = self.paths_list[self.file_1_index % self.len_paths_list]
+        self.file_name_1 = self.files.get_deep_file(self.path_file_1, 1)
 
-        self.file_name_2 = self.files_list[self.file_2_index % self.len_files_list]
-        self.path_file_2 = os.path.join(self.dir, self.file_name_2)
+        self.path_file_2 = self.paths_list[self.file_2_index % self.len_paths_list]
+        self.file_name_2 = self.files.get_deep_file(self.path_file_2, 1)
 
     # переопределённые данные которые необходимо обновлять во время работы программы
     def setupUi_chenges(self):

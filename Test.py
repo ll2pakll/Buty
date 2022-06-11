@@ -5,5 +5,4 @@ files = Files()
 
 path = files.get_tree('f:\Work area\Buty NN\Buty_frames', ['jpg', 'bat'])
 
-for i in path:
-    print(files.get_dict_file(i))
+print(files.get_deep_file(path[0], 1))
