@@ -32,8 +32,6 @@ class Buty(Ui_MainWindow):
 
         #variables:
 
-        #setupUi:
-
         #----------------------------------------------------------------------------
 
         self.actions()
@@ -43,9 +41,40 @@ class Buty(Ui_MainWindow):
     def actions(self):
         self.meta_1 = self.meta_data.read(self.path_file_1)
         self.meta_2 = self.meta_data.read(self.path_file_2)
-        self.setupUi_chenges()
+        self.Ui_chenges()
+        self.retranslateUi_1(MainWindow)
 
-    def setupUi_chenges(self):
+    # на данный момент это функция реагирования на нажатие
+    def add_function(self):
+        self.img_1.clicked.connect(lambda: self.on_click(self.img_1.objectName()))
+        self.img_2.clicked.connect(lambda: self.on_click(self.img_2.objectName()))
+
+    # инструкции при нажатии
+    def on_click(self, btn_name):
+        if btn_name == "img_1":
+            self.meta_1['scores'] += 1
+            self.meta_2['scores'] -= 1
+            self.meta_1['history_comparison'].add(self.files.get_deep_file(self.path_file_2, -2))
+            self.meta_2['history_comparison'].add(self.files.get_deep_file(self.path_file_1, -2))
+            self.both_metadata_save()
+            self.path_file_2 = self.path_generator.get_path(self.path_file_1, self.meta_1, self.paths_list)
+            self.file_name_2 = self.files.get_deep_file(self.path_file_2, -1)
+        elif btn_name == "img_2":
+            self.meta_2['scores'] += 1
+            self.meta_1['scores'] -= 1
+            self.meta_1['history_comparison'].add(self.files.get_deep_file(self.path_file_2, -2))
+            self.meta_2['history_comparison'].add(self.files.get_deep_file(self.path_file_1, -2))
+            self.both_metadata_save()
+            self.path_file_1 = self.path_generator.get_path(self.path_file_2, self.meta_2, self.paths_list)
+            self.file_name_1 = self.files.get_deep_file(self.path_file_1, -1)
+        self.actions()
+
+    def both_metadata_save(self):
+        self.meta_data.save(self.path_file_1, self.meta_1)
+        self.meta_data.save(self.path_file_2, self.meta_2)
+
+    # переопределённые данные которые необходимо обновлять во время работы программы
+    def Ui_chenges(self):
         # переопределённые данные которые необходимо обновлять во время работы программы
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(os.path.join(self.path_file_1)), QtGui.QIcon.Normal,
@@ -57,26 +86,11 @@ class Buty(Ui_MainWindow):
                         QtGui.QIcon.On)
         self.img_2.setIcon(icon1)
 
-    # на данный момент это функция реагирования на нажатие
-    def add_function(self):
-        self.img_1.clicked.connect(lambda: self.on_click(self.img_1.objectName()))
-        self.img_2.clicked.connect(lambda: self.on_click(self.img_2.objectName()))
-
-    # инструкции при нажатии
-    def on_click(self, btn_name):
-        if btn_name == "img_1":
-            self.meta_1['scores'] += 1
-            self.meta_1['history_comparison'].add(self.files.get_deep_file(self.path_file_2, -2))
-            self.meta_data.save(self.path_file_1, self.meta_1)
-            self.path_file_2 = self.path_generator.get_path(self.path_file_1, self.meta_1, self.paths_list)
-            self.file_name_2 = self.files.get_deep_file(self.path_file_2, -1)
-        elif btn_name == "img_2":
-            self.meta_2['scores'] += 1
-            self.meta_2['history_comparison'].add(self.files.get_deep_file(self.path_file_1, -2))
-            self.meta_data.save(self.path_file_2, self.meta_2)
-            self.path_file_1 = self.path_generator.get_path(self.path_file_2, self.meta_2, self.paths_list)
-            self.file_name_1 = self.files.get_deep_file(self.path_file_1, -1)
-        self.actions()
+    def retranslateUi_1(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.lb_name_1.setText(_translate("MainWindow", self.file_name_1))
+        self.lb_name_2.setText(_translate("MainWindow", self.file_name_2))
 
 
 if __name__ == "__main__":
