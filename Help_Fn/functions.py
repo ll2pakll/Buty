@@ -17,7 +17,7 @@ class Meta_data:
                      "history_comparison": set()
                      }
 
-    def read_metadata(self, path):
+    def read(self, path):
         self.__path(path)
         dflimg = DFLIMG.DFLJPG.load(self.path)
         try:
@@ -29,15 +29,20 @@ class Meta_data:
             print(f'{self.name} have no metadata')
             return self.default_meta
 
-    def save_metadata(self, path, meta):
+    def save(self, path, meta):
         self.__path(path)
         dflimg = DFLIMG.DFLJPG.load(self.path)
         dflimg.set_dict(dict_data=meta)
         dflimg.save()
         print('Meta_data save ', self.name, meta)
 
-    def del_metadata(self):
-        dflimg = DFLIMG.DFLJPG.load(self.path)
+    def clear(self, path):
+        dflimg = DFLIMG.DFLJPG.load(path)
+        dflimg.set_dict(dict_data=self.default_meta)
+        dflimg.save()
+
+    def delete(self, path):
+        dflimg = DFLIMG.DFLJPG.load(path)
         dflimg.set_dict(dict_data={})
         dflimg.save()
 
@@ -62,6 +67,23 @@ class Files:
                     filelist.append(os.path.join(root, file))
         return filelist
 
-    def get_deep_file(self, path, deep):
-        path = path.split('\\')[-deep:]
+    #можно получить часть пути на любую глбину, начиная с названия файла
+    def get_deep_file(self, path, deep, deep_2 = None):
+        path = path.split('\\')[deep: deep_2]
         return os.path.join(*path)
+
+class Path_generator:
+    '''Генератор путей, который ищет пару для фото которые ещё не сравнивались'''
+    def __init__(self):
+        self.files = Files()
+
+    def get_path(self, own_path, meta, path_list):
+        # own_path - путь файла, которому надо подобрать пару
+        # meta - метаданные этого файла
+        # path-list - список файлов из которых надо подобрать пару
+        for path in path_list:
+            if own_path != path:
+                if self.files.get_deep_file(path, -2) not in meta['history_comparison']:
+                    if self.files.get_deep_file(path, -2, -1) != meta['name']:
+                        return path
+

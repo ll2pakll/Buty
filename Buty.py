@@ -7,20 +7,32 @@ class Buty(Ui_MainWindow):
     def __init__(self, MainWindow):
         super(Buty, self).__init__()
         self.setupUi(MainWindow)
+
         #Static:
-            #paths:
-        self.files = Files() # класс для работы с файлами
+
+        # Classes
+        self.files = Files()  # класс для работы с файлами
+        self.meta_data = Meta_data()
+        self.path_generator = Path_generator()
+
+        #paths:
         self.paths_list = self.files.get_tree(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Buty_frames')))
         self.len_paths_list = len(self.paths_list)
 
-            #Classes
-        self.meta_data = Meta_data()
+        #создаём пути для первых фотографий
+        for path in self.paths_list:
+            self.meta_1 = self.meta_data.read(path)
+            if len(self.meta_1["history_comparison"]) < self.len_paths_list:
+                self.path_file_1 = path
+                self.file_name_1 = self.files.get_deep_file(self.path_file_1, -1)
+                break
+        self.path_file_2 = self.path_generator.get_path(self.path_file_1, self.meta_1, self.paths_list)
+        self.file_name_2 = self.files.get_deep_file(self.path_file_2, -1)
 
-            #variables:
-        self.file_1_index = 0
-        self.file_2_index = 0
 
-            #setupUi:
+        #variables:
+
+        #setupUi:
 
         #----------------------------------------------------------------------------
 
@@ -29,21 +41,12 @@ class Buty(Ui_MainWindow):
 
     # функция которую надо запускать что бы обновить окно и данные
     def actions(self):
-        self.paths()
-        self.meta_1 = self.meta_data.read_metadata(self.path_file_1)
-        self.meta_2 = self.meta_data.read_metadata(self.path_file_2)
+        self.meta_1 = self.meta_data.read(self.path_file_1)
+        self.meta_2 = self.meta_data.read(self.path_file_2)
         self.setupUi_chenges()
 
-    # рассчитывается индекс изображения в списке файлов и формируется имя файла
-    def paths(self):
-        self.path_file_1 = self.paths_list[self.file_1_index % self.len_paths_list]
-        self.file_name_1 = self.files.get_deep_file(self.path_file_1, 1)
-
-        self.path_file_2 = self.paths_list[self.file_2_index % self.len_paths_list]
-        self.file_name_2 = self.files.get_deep_file(self.path_file_2, 1)
-
-    # переопределённые данные которые необходимо обновлять во время работы программы
     def setupUi_chenges(self):
+        # переопределённые данные которые необходимо обновлять во время работы программы
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(os.path.join(self.path_file_1)), QtGui.QIcon.Normal,
                        QtGui.QIcon.On)
@@ -61,12 +64,18 @@ class Buty(Ui_MainWindow):
 
     # инструкции при нажатии
     def on_click(self, btn_name):
-        self.meta_data.save_metadata(self.path_file_1, self.meta_1)
-        self.meta_data.save_metadata(self.path_file_2, self.meta_2)
         if btn_name == "img_1":
-            self.file_1_index += 1
+            self.meta_1['scores'] += 1
+            self.meta_1['history_comparison'].add(self.files.get_deep_file(self.path_file_2, -2))
+            self.meta_data.save(self.path_file_1, self.meta_1)
+            self.path_file_2 = self.path_generator.get_path(self.path_file_1, self.meta_1, self.paths_list)
+            self.file_name_2 = self.files.get_deep_file(self.path_file_2, -1)
         elif btn_name == "img_2":
-            self.file_2_index += 1
+            self.meta_2['scores'] += 1
+            self.meta_2['history_comparison'].add(self.files.get_deep_file(self.path_file_1, -2))
+            self.meta_data.save(self.path_file_2, self.meta_2)
+            self.path_file_1 = self.path_generator.get_path(self.path_file_2, self.meta_2, self.paths_list)
+            self.file_name_1 = self.files.get_deep_file(self.path_file_1, -1)
         self.actions()
 
 
