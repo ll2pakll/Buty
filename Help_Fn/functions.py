@@ -1,9 +1,9 @@
-import pickle
 import DFLIMG
 import cv2
 
 import os
 import sys
+import random
 
 # Считывание, запись и удаление метаданных
 class Meta_data:
@@ -12,7 +12,7 @@ class Meta_data:
         self.default_meta = {
                      'identifier': 0,
                      'name': 0,
-                     'sex': 0,
+                     'sex': "w",
                      "scores": 0,
                      "history_comparison": set()
                      }
@@ -74,13 +74,36 @@ class Files:
 
 class Path_generator:
     '''Генератор путей, который ищет пару для фото которые ещё не сравнивались'''
-    def __init__(self):
+    def __init__(self, paths_list):
         self.files = Files()
+        self.metadata = Meta_data()
+        self.paths_list = paths_list
+        self.len_paths_list = len(self.paths_list)
+
+    def recurs_rand(self):
+        path = random.choice(self.paths_list)
+        meta = self.metadata.read(path)
+        if len(meta["history_comparison"]) < self.len_paths_list:
+            return path, meta
+        else:
+            self.paths_list.remove(path)
+            self.recurs_rand()
+
+    def get_paths(self):
+        path_1, meta_1 = self.recurs_rand()
+        path_2, meta_2 = self.recurs_rand()
+        if path_1 != path_2 \
+        and self.files.get_deep_file(path_1, -2) not in meta_2['history_comparison'] \
+        and self.files.get_deep_file(path_1, -2, -1) != meta_2['name']:
+            return path_1, path_2, meta_1, meta_2
+        else:
+            self.get_paths()
+
 
     def get_path(self, own_path, meta, path_list):
         # own_path - путь файла, которому надо подобрать пару
         # meta - метаданные этого файла
-        # path-list - список файлов из которых надо подобрать пару
+        # path_list - список файлов из которых надо подобрать пару
         for path in path_list:
             if own_path != path:
                 if self.files.get_deep_file(path, -2) not in meta['history_comparison']:
